@@ -9,6 +9,7 @@ Requirements
 ************
 
 - PHP 5.4+
+- SunLight CMS codebase (version 8.x)
 - `Composer <https://getcomposer.org/>`_
 
 
