@@ -1,0 +1,13 @@
+{
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": ">=5.4.0",
+        "nikic/php-parser": "^3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sunlight\\ExtendParser\\": "src"
+        }
+    }
+}
