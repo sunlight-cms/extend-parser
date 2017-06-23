@@ -36,7 +36,7 @@ class Cli
         $path = $this->argv[1];
 
         if (!file_exists($path)) {
-            return $this->fail("{$path} doest not exist");
+            return $this->fail("{$path} does not exist");
         }
 
         if (is_dir($path)) {
