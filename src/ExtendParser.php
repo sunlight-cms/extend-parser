@@ -46,7 +46,7 @@ class ExtendParser
 
         $extendCalls = $this->extendCallVisitor->finalize();
 
-        if (null !== $e) {
+        if ($e !== null) {
             throw $e;
         }
 

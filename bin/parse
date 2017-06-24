@@ -5,6 +5,4 @@ namespace Sunlight\ExtendParser;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-$cli = new Cli($argv, $argc);
-
-exit($cli->run());
+exit((new Cli())->run());

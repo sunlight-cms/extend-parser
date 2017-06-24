@@ -85,13 +85,13 @@ class ExtendCallVisitor extends NodeVisitorAbstract
     {
         $arguments = [];
 
-        if ('buffer' === $method) {
+        if ($method === 'buffer') {
             $outputArgument = new ExtendArgument();
             $outputArgument->name = 'output';
             $outputArgument->isRef = true;
 
             $arguments[] = $outputArgument;
-        } elseif ('fetch' === $method) {
+        } elseif ($method === 'fetch') {
             $valueArgument = new ExtendArgument();
             $valueArgument->name = 'value';
             $valueArgument->isRef = true;
@@ -109,7 +109,7 @@ class ExtendCallVisitor extends NodeVisitorAbstract
             foreach ($argumentsNode->value->items as $index => $arrayItem) {
                 $argument = new ExtendArgument();
 
-                if (null !== $arrayItem->key) {
+                if ($arrayItem->key !== null) {
                     $argument->name = $this->parseStringLiteralOrConcatenation($arrayItem->key);
                 } else {
                     $argument->name = "<unknown{$index}>";

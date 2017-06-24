@@ -4,21 +4,11 @@ namespace Sunlight\ExtendParser;
 
 class Cli
 {
-    /** @var string[] */
-    private $argv;
-    /** @var int */
-    private $argc;
     /** @var ExtendParser */
     private $parser;
 
-    /**
-     * @param string[] $argv
-     * @param int       $argc
-     */
-    public function __construct(array $argv, $argc)
+    public function __construct()
     {
-        $this->argv = $argv;
-        $this->argc = $argc;
         $this->parser = new ExtendParser();
     }
 
@@ -27,13 +17,15 @@ class Cli
      */
     public function run()
     {
-        if ($this->argc !== 2) {
+        global $argc, $argv;
+    
+        if ($argc !== 2) {
             $this->printUsage();
 
             return 1;
         }
 
-        $path = $this->argv[1];
+        $path = $argv[1];
 
         if (!file_exists($path)) {
             return $this->fail("{$path} does not exist");
@@ -42,7 +34,7 @@ class Cli
         if (is_dir($path)) {
             $extends = $this->parseExtendsInDirectory($path);
         } else {
-            $extends = $this->parseExtendsInFile(new \SplFileInfo($path));
+            $extends = $this->parseExtendsInFile($path);
         }
 
         echo json_encode($extends, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
