@@ -33,9 +33,13 @@ class Cli
 
         if (is_dir($path)) {
             $extends = $this->parseExtendsInDirectory($path);
+            $baseDirectory = $path;
         } else {
             $extends = $this->parseExtendsInFile($path);
+            $baseDirectory = dirname($path);
         }
+
+        $this->normalizeExtendPaths($extends, $baseDirectory);
 
         echo json_encode($extends, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
@@ -73,6 +77,30 @@ class Cli
     private function parseExtendsInFile($path)
     {
         return $this->parser->parse(file_get_contents($path), $path);
+    }
+
+    /**
+     * @param ExtendCall[] $extendCalls
+     * @param string $baseDirectory
+     */
+    private function normalizeExtendPaths(array $extendCalls, $baseDirectory)
+    {
+        $baseDirectory = realpath($baseDirectory);
+        $baseDirectoryLength = strlen($baseDirectory);
+
+        foreach ($extendCalls as $extendCall) {
+            if ($extendCall->file === null) {
+                continue;
+            }
+
+            $realFilePath = realpath($extendCall->file);
+
+            if (strncmp($realFilePath, $baseDirectory, $baseDirectoryLength) === 0) {
+                $extendCall->file = substr($realFilePath, $baseDirectoryLength);
+            }
+
+            $extendCall->file = str_replace(DIRECTORY_SEPARATOR, '/', $extendCall->file);
+        }
     }
 
     /**
