@@ -39,6 +39,7 @@ class Cli
             $baseDirectory = dirname($path);
         }
 
+        usort($extends, [$this, 'sortExtends']);
         $this->normalizeExtendPaths($extends, $baseDirectory);
 
         echo json_encode($extends, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -77,6 +78,16 @@ class Cli
     private function parseExtendsInFile($path)
     {
         return $this->parser->parse(file_get_contents($path), $path);
+    }
+    
+    /**
+     * @param ExtendCall $a
+     * @param ExtendCall $b
+     * @return int
+     */
+    private function sortExtends(ExtendCall $a, ExtendCall $b)
+    {
+        return strnatcmp($a->event, $b->event);
     }
 
     /**
