@@ -1,0 +1,4 @@
+{
+    "buffer(6)@Sunlight\\Page\\PageMenu::render": "tpl.menu.item",
+    "call(7)@functions.php/_headAssets": "tpl.head / admin.head"
+}

@@ -5,4 +5,15 @@ namespace Sunlight\ExtendParser;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-exit((new Cli())->run());
+set_exception_handler(function ($e) {
+    if ($e instanceof CliException) {
+        fwrite(STDERR, 'ERROR: ');
+        fwrite(STDERR, $e->getMessage());
+    } else {
+        fwrite(STDERR, (string) $e);
+    }
+
+    exit(1);
+});
+
+(new Cli())->run();

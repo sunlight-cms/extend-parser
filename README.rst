@@ -8,7 +8,7 @@ and produces a JSON output with the found invocations.
 Requirements
 ************
 
-- PHP 5.4+
+- PHP 5.6+
 - SunLight CMS codebase (version 8.x)
 - `Composer <https://getcomposer.org/>`_
 

@@ -8,10 +8,12 @@ class ExtendCall
     public $file;
     /** @var int */
     public $line;
-    /** @var string */
+    /** @var string|null */
     public $event;
     /** @var ExtendArguments */
     public $arguments;
     /** @var string */
     public $method;
+    /** @var string|null */
+    public $context;
 }

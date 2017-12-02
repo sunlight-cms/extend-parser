@@ -4,25 +4,30 @@ namespace Sunlight\ExtendParser;
 
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
-use PhpParser\Parser;
+use PhpParser\Parser as PhpParser;
 use PhpParser\ParserFactory;
 
-class ExtendParser
+class Parser
 {
-    /** @var Parser */
+    /** @var PhpParser */
     private $phpParser;
     /** @var NodeTraverser */
     private $traverser;
     /** @var ExtendCallVisitor */
     private $extendCallVisitor;
+    /** @var CurrentFunctionResolver */
+    private $currentFunctionResolver;
 
     public function __construct()
     {
         $parserFactory = new ParserFactory();
+        $this->currentFunctionResolver = new CurrentFunctionResolver();
+
         $this->phpParser = $parserFactory->create(ParserFactory::ONLY_PHP5);
-        $this->extendCallVisitor = new ExtendCallVisitor();
+        $this->extendCallVisitor = new ExtendCallVisitor($this->currentFunctionResolver);
         $this->traverser = new NodeTraverser();
         $this->traverser->addVisitor(new NameResolver());
+        $this->traverser->addVisitor($this->currentFunctionResolver);
         $this->traverser->addVisitor($this->extendCallVisitor);
     }
 
@@ -34,6 +39,7 @@ class ExtendParser
     public function parse($code, $file = null)
     {
         $this->extendCallVisitor->setFile($file);
+        $this->currentFunctionResolver->reset();
 
         $e = null;
         try {

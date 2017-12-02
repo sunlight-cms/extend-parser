@@ -25,6 +25,13 @@ class ExtendCallVisitor extends NodeVisitorAbstract
     private $extendCalls = [];
     /** @var string|null */
     private $file;
+    /** @var CurrentFunctionResolver */
+    private $currentFunctionResolver;
+
+    public function __construct(CurrentFunctionResolver $currentFunctionResolver)
+    {
+        $this->currentFunctionResolver = $currentFunctionResolver;
+    }
 
     public function leaveNode(Node $node)
     {
@@ -40,6 +47,7 @@ class ExtendCallVisitor extends NodeVisitorAbstract
             $extendCall->file = $this->file;
             $extendCall->line = $node->getLine();
             $extendCall->method = $node->name;
+            $extendCall->context = $this->currentFunctionResolver->getCurrentFunction();
 
             // event name
             $extendCall->event = $this->parseStringLiteralOrConcatenation($node->args[0]->value);
@@ -111,7 +119,9 @@ class ExtendCallVisitor extends NodeVisitorAbstract
 
                 if ($arrayItem->key !== null) {
                     $argument->name = $this->parseStringLiteralOrConcatenation($arrayItem->key);
-                } else {
+                }
+
+                if ($argument->name === null) {
                     $argument->name = "<unknown{$index}>";
                 }
 
@@ -132,7 +142,7 @@ class ExtendCallVisitor extends NodeVisitorAbstract
 
     /**
      * @param Node $node
-     * @return string
+     * @return string|null
      */
     private function parseStringLiteralOrConcatenation(Node $node)
     {
@@ -162,7 +172,7 @@ class ExtendCallVisitor extends NodeVisitorAbstract
         }
 
         // dynamic
-        return $this->getDynamicNodeRepresentation($node);
+        return null;
     }
 
     /**
@@ -190,18 +200,5 @@ class ExtendCallVisitor extends NodeVisitorAbstract
         }
 
         return $name;
-    }
-
-    /**
-     * @param Node $node
-     * @return string
-     */
-    private function getDynamicNodeRepresentation(Node $node)
-    {
-        if ($node instanceof Variable && is_string($node->name)) {
-            return 'variable#' . $node->name;
-        }
-
-        return 'dynamic#' . sprintf('%x', crc32($this->file . '$' . json_encode($node)));
     }
 }

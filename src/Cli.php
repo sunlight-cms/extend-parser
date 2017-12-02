@@ -4,138 +4,114 @@ namespace Sunlight\ExtendParser;
 
 class Cli
 {
-    /** @var ExtendParser */
-    private $parser;
+    const DEFAULT_HINTS_FILE = __DIR__ . '/Resources/hints.json';
+
+    /** @var Extractor */
+    private $extractor;
+    /** @var Normalizer */
+    private $normalizer;
 
     public function __construct()
     {
-        $this->parser = new ExtendParser();
+        $this->extractor = new Extractor(new Parser());
+        $this->normalizer = new Normalizer();
     }
 
-    /**
-     * @return int
-     */
     public function run()
     {
         global $argc, $argv;
     
-        if ($argc !== 2) {
+        if ($argc < 2 || $argc > 3) {
             $this->printUsage();
 
-            return 1;
+            return;
         }
 
         $path = $argv[1];
+        $hintsFile = isset($argv[2]) ? $argv[2] : static::DEFAULT_HINTS_FILE;
 
         if (!file_exists($path)) {
-            return $this->fail("{$path} does not exist");
+            $this->fail('Path "%s" does not exist', $path);
         }
+
+        $this->loadHints($hintsFile);
 
         if (is_dir($path)) {
-            $extends = $this->parseExtendsInDirectory($path);
-            $baseDirectory = $path;
+            $extends = $this->extractor->fromDirectory($path);
+            $this->normalizer->setBasePath($path);
         } else {
-            $extends = $this->parseExtendsInFile($path);
-            $baseDirectory = dirname($path);
+            $extends = $this->extractor->fromFile($path);
+            $this->normalizer->setBasePath(dirname($path));
         }
 
-        usort($extends, [$this, 'sortExtends']);
-        $this->normalizeExtendPaths($extends, $baseDirectory);
+        $extends = $this->normalizer->normalize($extends);
+        
+        $this->verify($extends);
 
         echo json_encode($extends, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-
-        return 0;
     }
 
     /**
-     * @param string $directory
-     * @return ExtendCall[]
+     * @param string $hintsFile
      */
-    private function parseExtendsInDirectory($directory)
+    private function loadHints($hintsFile)
     {
-        $extends = [];
-
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($directory, \RecursiveDirectoryIterator::CURRENT_AS_FILEINFO)
-        );
-
-        foreach ($iterator as $item) {
-            /** @var \SplFileInfo $item */
-            if ($item->getExtension() === 'php' && !$this->isExcludedPath($path = $item->getPathname())) {
-                foreach ($this->parseExtendsInFile($path) as $extend) {
-                    $extends[] = $extend;
-                }
-            }
+        if (!file_exists($hintsFile)) {
+            $this->fail('Hints file "%s" does not exist', $hintsFile);
         }
 
-        return $extends;
-    }
+        $hints = json_decode(file_get_contents($hintsFile), true);
 
-    /**
-     * @param string $path $file
-     * @return ExtendCall[]
-     */
-    private function parseExtendsInFile($path)
-    {
-        return $this->parser->parse(file_get_contents($path), $path);
-    }
-    
-    /**
-     * @param ExtendCall $a
-     * @param ExtendCall $b
-     * @return int
-     */
-    private function sortExtends(ExtendCall $a, ExtendCall $b)
-    {
-        return strnatcmp($a->event, $b->event);
+        if (!is_array($hints)) {
+            $this->fail('Failed to load hints file "%s"', $hintsFile);
+        }
+
+        $this->normalizer->setHints($hints);
     }
 
     /**
      * @param ExtendCall[] $extendCalls
-     * @param string $baseDirectory
      */
-    private function normalizeExtendPaths(array $extendCalls, $baseDirectory)
+    private function verify(array $extendCalls)
     {
-        $baseDirectory = realpath($baseDirectory);
-        $baseDirectoryLength = strlen($baseDirectory);
-
-        foreach ($extendCalls as $extendCall) {
+        foreach ($extendCalls as $index => $extendCall) {
             if ($extendCall->file === null) {
-                continue;
+                $this->warn('Extend #%d has NULL file', $index);
             }
 
-            $realFilePath = realpath($extendCall->file);
-
-            if (strncmp($realFilePath, $baseDirectory, $baseDirectoryLength) === 0) {
-                $extendCall->file = substr($realFilePath, $baseDirectoryLength);
+            if ($extendCall->event === null) {
+                $this->warn('Extend #%d has NULL event, missing hint?', $index);
             }
-
-            $extendCall->file = str_replace(DIRECTORY_SEPARATOR, '/', $extendCall->file);
         }
-    }
 
-    /**
-     * @param string $path
-     * @return bool
-     */
-    private function isExcludedPath($path)
-    {
-        return (bool) preg_match('{[\\\\/](?:vendor|plugins|cache|tmp)[\\\\/]}', $path);
+        foreach ($this->normalizer->getUnmatchedHints() as $unmatchedHint) {
+            $this->warn('Unmatched hint "%s"', $unmatchedHint);
+        }
     }
 
     private function printUsage()
     {
-        echo "Usage: parse <path-to-sunlight-root-directory|path-to-single-file>\n";
+        echo "Usage: parse <directory|file> [hints-file]\n";
     }
 
     /**
      * @param string $message
-     * @return int
+     * @param mixed $args,...
      */
-    private function fail($message)
+    private function warn($message, ...$args)
     {
-        fwrite(STDERR, "ERROR: {$message}\n");
+        fwrite(STDERR, 'Warning: ');
+        fwrite(STDERR, $args ? vsprintf($message, $args) : $message);
+        fwrite(STDERR, "\n");
+    }
 
-        return 1;
+    /**
+     * @param string $message
+     * @param mixed $args,...
+     * @throws CliException
+     */
+    private function fail($message, ...$args)
+    {
+        throw new CliException($args ? vsprintf($message, $args) : $message);
     }
 }
