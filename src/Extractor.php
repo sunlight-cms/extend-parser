@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Sunlight\ExtendParser;
 
@@ -7,16 +7,15 @@ class Extractor
     /** @var Parser */
     private $parser;
 
-    public function __construct(Parser $parser)
+    function __construct(Parser $parser)
     {
         $this->parser = $parser;
     }
 
     /**
-     * @param string $directory
      * @return ExtendCall[]
      */
-    public function fromDirectory($directory)
+    function fromDirectory(string $directory): array
     {
         $extends = [];
 
@@ -37,19 +36,14 @@ class Extractor
     }
 
     /**
-     * @param string $path $file
      * @return ExtendCall[]
      */
-    public function fromFile($path)
+    function fromFile(string $path): array
     {
         return $this->parser->parse(file_get_contents($path), $path);
     }
 
-    /**
-     * @param string $path
-     * @return bool
-     */
-    private function isExcludedPath($path)
+    private function isExcludedPath(string $path): bool
     {
         return (bool) preg_match('{[\\\\/](?:vendor|plugins|cache|tmp)[\\\\/]}', $path);
     }

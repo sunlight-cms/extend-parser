@@ -5,7 +5,7 @@ namespace Sunlight\ExtendParser;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-set_exception_handler(function ($e) {
+set_exception_handler(function (\Throwable $e) {
     if ($e instanceof CliException) {
         fwrite(STDERR, 'ERROR: ');
         fwrite(STDERR, $e->getMessage());

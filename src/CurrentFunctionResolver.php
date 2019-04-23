@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Sunlight\ExtendParser;
 
@@ -16,7 +16,7 @@ class CurrentFunctionResolver extends NodeVisitorAbstract
     /** @var Node[] */
     private $context;
 
-    public function enterNode(Node $node)
+    function enterNode(Node $node)
     {
         if (
             $node instanceof Function_
@@ -28,7 +28,7 @@ class CurrentFunctionResolver extends NodeVisitorAbstract
         }
     }
 
-    public function leaveNode(Node $node)
+    function leaveNode(Node $node)
     {
         if (empty($this->context)) {
             return;
@@ -39,10 +39,7 @@ class CurrentFunctionResolver extends NodeVisitorAbstract
         }
     }
 
-    /**
-     * @return string|null
-     */
-    public function getCurrentFunction()
+    function getCurrentFunction(): ?string
     {
         /** @var Function_|ClassMethod|null $function */
         $function = null;
@@ -77,7 +74,7 @@ class CurrentFunctionResolver extends NodeVisitorAbstract
         return null;
     }
 
-    public function reset()
+    function reset(): void
     {
         $this->context = [];
     }

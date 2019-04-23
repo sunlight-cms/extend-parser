@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Sunlight\ExtendParser;
 
@@ -11,14 +11,17 @@ class Parser
 {
     /** @var PhpParser */
     private $phpParser;
+
     /** @var NodeTraverser */
     private $traverser;
+
     /** @var ExtendCallVisitor */
     private $extendCallVisitor;
+
     /** @var CurrentFunctionResolver */
     private $currentFunctionResolver;
 
-    public function __construct()
+    function __construct()
     {
         $parserFactory = new ParserFactory();
         $this->currentFunctionResolver = new CurrentFunctionResolver();
@@ -32,11 +35,9 @@ class Parser
     }
 
     /**
-     * @param string      $code
-     * @param string|null $file
      * @return ExtendCall[]
      */
-    public function parse($code, $file = null)
+    function parse(string $code, ?string $file = null): array
     {
         $this->extendCallVisitor->setFile($file);
         $this->currentFunctionResolver->reset();

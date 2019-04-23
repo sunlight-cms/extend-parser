@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Sunlight\ExtendParser;
 
@@ -18,22 +18,25 @@ class ExtendCallVisitor extends NodeVisitorAbstract
 {
     /** @var string */
     private static $extendFqcn = 'Sunlight\\Extend';
+
     /** @var array */
     private static $extendMethodMap = ['call' => 0, 'fetch' => 1, 'buffer' => 2];
 
     /** @var ExtendCall[] */
     private $extendCalls = [];
+
     /** @var string|null */
     private $file;
+
     /** @var CurrentFunctionResolver */
     private $currentFunctionResolver;
 
-    public function __construct(CurrentFunctionResolver $currentFunctionResolver)
+    function __construct(CurrentFunctionResolver $currentFunctionResolver)
     {
         $this->currentFunctionResolver = $currentFunctionResolver;
     }
 
-    public function leaveNode(Node $node)
+    function leaveNode(Node $node)
     {
         if (
             $node instanceof StaticCall
@@ -64,10 +67,7 @@ class ExtendCallVisitor extends NodeVisitorAbstract
         }
     }
 
-    /**
-     * @param string|null $file
-     */
-    public function setFile($file)
+    function setFile(?string $file): void
     {
         $this->file = $file;
     }
@@ -75,7 +75,7 @@ class ExtendCallVisitor extends NodeVisitorAbstract
     /**
      * @return ExtendCall[]
      */
-    public function finalize()
+    function finalize(): array
     {
         $extendCalls = $this->extendCalls;
 
@@ -86,10 +86,9 @@ class ExtendCallVisitor extends NodeVisitorAbstract
     }
 
     /**
-     * @param string $method
      * @return ExtendArgument[]
      */
-    private function getImpliedExtendArguments($method)
+    private function getImpliedExtendArguments(string $method): array
     {
         $arguments = [];
 
@@ -110,7 +109,7 @@ class ExtendCallVisitor extends NodeVisitorAbstract
         return $arguments;
     }
 
-    private function addExtendArgumentsFromArgumentNode(ExtendArguments $arguments, Arg $argumentsNode)
+    private function addExtendArgumentsFromArgumentNode(ExtendArguments $arguments, Arg $argumentsNode): void
     {
         if ($argumentsNode->value instanceof Array_) {
             // array literal
@@ -140,11 +139,7 @@ class ExtendCallVisitor extends NodeVisitorAbstract
         }
     }
 
-    /**
-     * @param Node $node
-     * @return string|null
-     */
-    private function parseStringLiteralOrConcatenation(Node $node)
+    private function parseStringLiteralOrConcatenation(Node $node): ?string
     {
         if ($node instanceof String_) {
             // scalar name
@@ -175,11 +170,7 @@ class ExtendCallVisitor extends NodeVisitorAbstract
         return null;
     }
 
-    /**
-     * @param Concat $concat
-     * @return string
-     */
-    private function parseStringConcatenation(Concat $concat)
+    private function parseStringConcatenation(Concat $concat): string
     {
         $name = '';
 

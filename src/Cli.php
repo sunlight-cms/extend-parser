@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Sunlight\ExtendParser;
 
@@ -8,16 +8,17 @@ class Cli
 
     /** @var Extractor */
     private $extractor;
+
     /** @var Normalizer */
     private $normalizer;
 
-    public function __construct()
+    function __construct()
     {
         $this->extractor = new Extractor(new Parser());
         $this->normalizer = new Normalizer();
     }
 
-    public function run()
+    function run(): void
     {
         global $argc, $argv;
     
@@ -51,10 +52,7 @@ class Cli
         echo json_encode($extends, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 
-    /**
-     * @param string $hintsFile
-     */
-    private function loadHints($hintsFile)
+    private function loadHints(string $hintsFile): void
     {
         if (!file_exists($hintsFile)) {
             $this->fail('Hints file "%s" does not exist', $hintsFile);
@@ -72,15 +70,26 @@ class Cli
     /**
      * @param ExtendCall[] $extendCalls
      */
-    private function verify(array $extendCalls)
+    private function verify(array $extendCalls): void
     {
         foreach ($extendCalls as $index => $extendCall) {
             if ($extendCall->file === null) {
-                $this->warn('Extend #%d has NULL file', $index);
+                $this->warn('Extend #%d has NULL file (this should not happen)', $index);
             }
 
             if ($extendCall->event === null) {
-                $this->warn('Extend #%d has NULL event, missing hint?', $index);
+                $this->warn(
+                    'Extend #%d at %s:%d has NULL event, missing hint?',
+                    $index,
+                    $extendCall->file,
+                    $extendCall->line
+                );
+
+                $this->notice(
+                    'Extend #%d hit key is %s',
+                    $index,
+                    $this->normalizer->getHintsKey($extendCall)
+                );
             }
         }
 
@@ -89,28 +98,43 @@ class Cli
         }
     }
 
-    private function printUsage()
+    private function printUsage(): void
     {
         echo "Usage: parse <directory|file> [hints-file]\n";
     }
 
-    /**
-     * @param string $message
-     * @param mixed $args,...
-     */
-    private function warn($message, ...$args)
+    private function notice(string $message, ...$args): void
     {
-        fwrite(STDERR, 'Warning: ');
-        fwrite(STDERR, $args ? vsprintf($message, $args) : $message);
-        fwrite(STDERR, "\n");
+        $this->printMessage('NOTICE', $message, ...$args);
+    }
+
+    private function warn(string $message, ...$args): void
+    {
+        $this->printMessage('WARN', $message, ...$args);
+    }
+
+    private function printMessage(string $type, string $message, ...$args): void
+    {
+        $this->writeToStdErr(
+            '[',
+            $type,
+            '] ',
+            $args ? vsprintf($message, $args) : $message,
+            "\n"
+        );
+    }
+
+    private function writeToStdErr(string ...$strings): void
+    {
+        foreach ($strings as $string) {
+            fwrite(STDERR, $string);
+        }
     }
 
     /**
-     * @param string $message
-     * @param mixed $args,...
      * @throws CliException
      */
-    private function fail($message, ...$args)
+    private function fail(string $message, ...$args): void
     {
         throw new CliException($args ? vsprintf($message, $args) : $message);
     }
