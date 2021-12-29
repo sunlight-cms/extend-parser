@@ -29,7 +29,7 @@ class Cli
         }
 
         $path = $argv[1];
-        $hintsFile = isset($argv[2]) ? $argv[2] : static::DEFAULT_HINTS_FILE;
+        $hintsFile = $argv[2] ?? static::DEFAULT_HINTS_FILE;
 
         if (!file_exists($path)) {
             $this->fail('Path "%s" does not exist', $path);

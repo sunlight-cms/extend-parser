@@ -26,7 +26,7 @@ class Parser
         $parserFactory = new ParserFactory();
         $this->currentFunctionResolver = new CurrentFunctionResolver();
 
-        $this->phpParser = $parserFactory->create(ParserFactory::ONLY_PHP5);
+        $this->phpParser = $parserFactory->create(ParserFactory::PREFER_PHP7);
         $this->extendCallVisitor = new ExtendCallVisitor($this->currentFunctionResolver);
         $this->traverser = new NodeTraverser();
         $this->traverser->addVisitor(new NameResolver());
@@ -42,19 +42,14 @@ class Parser
         $this->extendCallVisitor->setFile($file);
         $this->currentFunctionResolver->reset();
 
-        $e = null;
         try {
             $this->traverser->traverse(
                 $this->phpParser->parse($code)
             );
-        } catch (\Exception $e) {
         } catch (\Throwable $e) {
-        }
-
-        $extendCalls = $this->extendCallVisitor->finalize();
-
-        if ($e !== null) {
-            throw $e;
+            throw new \RuntimeException(sprintf('Error while parsing %s', $file ?? '<no file>'), 0, $e);
+        } finally {
+            $extendCalls = $this->extendCallVisitor->finalize();
         }
 
         return $extendCalls;

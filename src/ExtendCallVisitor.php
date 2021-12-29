@@ -42,9 +42,8 @@ class ExtendCallVisitor extends NodeVisitorAbstract
             $node instanceof StaticCall
             && $node->class instanceof FullyQualified
             && $node->class->toString() === static::$extendFqcn
-            && is_string($node->name)
-            && isset(static::$extendMethodMap[$node->name])
-            && sizeof($node->args) >= 1
+            && isset(static::$extendMethodMap[$node->name->toString()])
+            && count($node->args) >= 1
         ) {
             $extendCall = new ExtendCall();
             $extendCall->file = $this->file;
@@ -57,9 +56,9 @@ class ExtendCallVisitor extends NodeVisitorAbstract
 
             // arguments
             $extendCall->arguments = new ExtendArguments();
-            $extendCall->arguments->arguments = $this->getImpliedExtendArguments($node->name);
+            $extendCall->arguments->arguments = $this->getImpliedExtendArguments($node->name->toString());
 
-            if (sizeof($node->args) >= 2) {
+            if (count($node->args) >= 2) {
                 $this->addExtendArgumentsFromArgumentNode($extendCall->arguments, $node->args[1]);
             }
 

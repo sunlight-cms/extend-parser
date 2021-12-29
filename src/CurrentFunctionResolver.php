@@ -34,7 +34,7 @@ class CurrentFunctionResolver extends NodeVisitorAbstract
             return;
         }
 
-        if ($this->context[sizeof($this->context) - 1] === $node) {
+        if ($this->context[count($this->context) - 1] === $node) {
             array_pop($this->context);
         }
     }
@@ -46,7 +46,7 @@ class CurrentFunctionResolver extends NodeVisitorAbstract
         /** @var Class_|Trait_|null $class */
         $class = null;
 
-        for ($i = sizeof($this->context) - 1; $i >= 0; --$i) {
+        for ($i = count($this->context) - 1; $i >= 0; --$i) {
             $node = $this->context[$i];
 
             if ($function === null) {
@@ -64,11 +64,11 @@ class CurrentFunctionResolver extends NodeVisitorAbstract
         }
 
         if ($function instanceof Function_) {
-            return $function->name;
+            return $function->name->toString();
         }
 
         if ($function instanceof ClassMethod && $class instanceof ClassLike) {
-            return $class->namespacedName . '::' . $function->name;
+            return $class->namespacedName->toString() . '::' . $function->name->toString();
         }
 
         return null;

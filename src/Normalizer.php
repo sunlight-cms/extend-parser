@@ -45,7 +45,7 @@ class Normalizer
             $extendCall->method,
             $extendCall->arguments->isDynamic ?
                 '*' . $extendCall->arguments->variableName
-                : sizeof($extendCall->arguments->arguments),
+                : count($extendCall->arguments->arguments),
             $context
         );
     }

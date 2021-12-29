@@ -20,7 +20,7 @@ class Extractor
         $extends = [];
 
         $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($directory, \RecursiveDirectoryIterator::CURRENT_AS_FILEINFO)
+            new \RecursiveDirectoryIterator($directory, \FilesystemIterator::CURRENT_AS_FILEINFO)
         );
 
         foreach ($iterator as $item) {
