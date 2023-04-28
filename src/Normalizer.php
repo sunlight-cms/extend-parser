@@ -14,7 +14,10 @@ class Normalizer
     private $hints;
 
     /** @var array */
-    private $unmatchedHints;
+    private $missingHints;
+
+    /** @var array */
+    private $matchedHints;
 
     function setBasePath(?string $basePath): void
     {
@@ -51,13 +54,23 @@ class Normalizer
     }
 
     /**
-     * Get unmatched hints since the last normalize call
+     * Get missing hints in the last normalize call
      *
      * @return string[]
      */
-    function getUnmatchedHints(): array
+    function getMissingHints(): array
     {
-        return array_keys($this->unmatchedHints);
+        return array_keys($this->missingHints);
+    }
+
+    /**
+     * Get hints that were not used in the last normalize call
+     *
+     * @return string[]
+     */
+    function getUnusedHints(): array
+    {
+        return array_keys(array_diff_key($this->hints, $this->matchedHints));
     }
 
     /**
@@ -66,7 +79,8 @@ class Normalizer
      */
     function normalize(array $extendCalls): array
     {
-        $this->unmatchedHints = array();
+        $this->missingHints = [];
+        $this->matchedHints = [];
 
         foreach ($extendCalls as $extendCall) {
             $this->normalizeFile($extendCall);
@@ -105,13 +119,14 @@ class Normalizer
 
         if (isset($this->hints[$hintsKey])) {
             $extendCall->event = $this->hints[$hintsKey];
+            $this->matchedHints[$hintsKey] = true;
         } else {
-            $this->unmatchedHints[$hintsKey] = true;
+            $this->missingHints[$hintsKey] = true;
         }
     }
 
     private function sortExtends(ExtendCall $a, ExtendCall $b): int
     {
-        return strnatcmp($a->event, $b->event);
+        return strnatcmp($a->event ?? '', $b->event ?? '');
     }
 }

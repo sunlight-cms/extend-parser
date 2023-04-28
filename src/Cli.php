@@ -86,15 +86,19 @@ class Cli
                 );
 
                 $this->notice(
-                    'Extend #%d hit key is %s',
+                    'Extend #%d hint key is %s',
                     $index,
                     $this->normalizer->getHintsKey($extendCall)
                 );
             }
         }
 
-        foreach ($this->normalizer->getUnmatchedHints() as $unmatchedHint) {
-            $this->warn('Unmatched hint "%s"', $unmatchedHint);
+        foreach ($this->normalizer->getMissingHints() as $unmatchedHint) {
+            $this->warn('Missing hint "%s"', $unmatchedHint);
+        }
+
+        foreach ($this->normalizer->getUnusedHints() as $unusedHint) {
+            $this->warn('Unused hint "%s"', $unusedHint);
         }
     }
 
