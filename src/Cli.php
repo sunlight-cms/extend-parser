@@ -76,21 +76,6 @@ class Cli
             if ($extendCall->file === null) {
                 $this->warn('Extend #%d has NULL file (this should not happen)', $index);
             }
-
-            if ($extendCall->event === null) {
-                $this->warn(
-                    'Extend #%d at %s:%d has NULL event, missing hint?',
-                    $index,
-                    $extendCall->file,
-                    $extendCall->line
-                );
-
-                $this->notice(
-                    'Extend #%d hint key is %s',
-                    $index,
-                    $this->normalizer->getHintsKey($extendCall)
-                );
-            }
         }
 
         foreach ($this->normalizer->getMissingHints() as $unmatchedHint) {
