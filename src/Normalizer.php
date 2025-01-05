@@ -111,7 +111,7 @@ class Normalizer
 
     private function normalizeEvent(ExtendCall $extendCall): void
     {
-        if ($extendCall->event !== null || !isset($extendCall->file, $extendCall->context)) {
+        if (!isset($extendCall->file, $extendCall->context)) {
             return;
         }
 
@@ -120,7 +120,7 @@ class Normalizer
         if (isset($this->hints[$hintsKey])) {
             $extendCall->event = $this->hints[$hintsKey];
             $this->matchedHints[$hintsKey] = true;
-        } else {
+        } elseif ($extendCall->event === null) {
             $this->missingHints[$hintsKey] = true;
         }
     }

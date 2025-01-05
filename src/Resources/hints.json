@@ -1,4 +1,5 @@
 {
     "buffer(7)@Sunlight\\Page\\PageMenu::render": "tpl.menu.item",
+    "call(5)@Sunlight\\Page\\PageMenu::render": "tpl.menu.item_container",
     "call(8)@Sunlight\\GenericTemplates::renderHeadAssets": "tpl.head / admin.head"
 }
